@@ -75,6 +75,10 @@ APP_NAME=ReceiptIQ
 DEFAULT_CURRENCY=USD
 ```
 
+Note: `SUPABASE_URL` and `SUPABASE_ANON_KEY` are used to generate `config.js` at build time. Because Netlify secrets scanning can flag environment values written into build output, this project sets `SECRETS_SCAN_OMIT_KEYS` for these keys in `netlify.toml`.
+
+If you use `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` instead, you can add those names to the same omit list.
+
 If you prefer Vercel, use the same environment variables and set `NODE_VERSION=20` if needed.
 
 ---
