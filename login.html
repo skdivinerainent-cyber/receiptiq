@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReceiptIQ — Transactions</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#080a0d;--bg2:#0d1017;--surface:#111520;--surface2:#161c2a;--border:#1a2035;--border2:#202840;--accent:#4fffb0;--accent2:#3b82f6;--accent3:#f5c842;--accent4:#ff6b6b;--text:#e8edf8;--muted:#4a5568;--label:#8892a4}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+.sidebar{width:240px;min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid var(--border);font-family:'Instrument Serif',serif;font-size:20px;display:flex;align-items:center;gap:8px}
+.logo-dot{width:8px;height:8px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.sidebar-section{padding:20px 12px 8px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--label);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.15s;margin:1px 8px;cursor:pointer}
+.nav-item:hover{background:var(--surface);color:var(--text)}
+.nav-item.active{background:rgba(79,255,176,0.08);color:var(--accent);border:1px solid rgba(79,255,176,0.12)}
+.nav-icon{font-size:15px;width:20px;text-align:center}
+.nav-badge{margin-left:auto;background:var(--accent);color:#000;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;font-family:'JetBrains Mono',monospace}
+.sidebar-bottom{margin-top:auto;border-top:1px solid var(--border);padding:16px}
+.user-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;cursor:pointer}
+.user-avatar{width:32px;height:32px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#000;flex-shrink:0}
+.user-name{font-size:13px;font-weight:600}
+.user-plan{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column}
+.topbar{height:60px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:rgba(8,10,13,0.8);backdrop-filter:blur(12px);position:sticky;top:0;z-index:40}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.page-title{font-size:15px;font-weight:600}
+.breadcrumb{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.topbar-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid var(--border2);color:var(--label);background:transparent;cursor:pointer;transition:all 0.2s;text-decoration:none}
+.topbar-btn:hover{border-color:var(--label);color:var(--text)}
+.topbar-btn.primary{background:var(--accent);color:#000;border-color:var(--accent)}
+.content{padding:28px;flex:1}
+
+/* FILTERS */
+.filters{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.search-box{
+  flex:1;min-width:200px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:8px;padding:9px 14px;
+  display:flex;align-items:center;gap:8px;
+}
+.search-box input{background:transparent;border:none;outline:none;color:var(--text);font-size:13px;width:100%;font-family:'DM Sans',sans-serif}
+.search-box input::placeholder{color:var(--muted)}
+.filter-btn{
+  padding:9px 16px;border-radius:8px;font-size:12px;font-weight:500;
+  border:1px solid var(--border2);color:var(--label);
+  background:var(--surface);cursor:pointer;transition:all 0.2s;
+  font-family:'JetBrains Mono',monospace;
+}
+.filter-btn:hover,.filter-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(79,255,176,0.06)}
+
+/* TABLE */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.table-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.table-meta{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+table{width:100%;border-collapse:collapse}
+th{padding:10px 20px;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border);text-align:left;font-weight:500;cursor:pointer;user-select:none}
+th:hover{color:var(--label)}
+td{padding:14px 20px;border-bottom:1px solid var(--border);font-size:13px;color:var(--label);vertical-align:middle}
+tr:hover td{background:var(--surface2);cursor:pointer}
+tr:last-child td{border:none}
+.merchant-cell{display:flex;align-items:center;gap:10px;color:var(--text)}
+.merchant-thumb{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.merchant-name{font-weight:500}
+.merchant-ref{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.cat-pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:3px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.cat-travel{background:rgba(59,130,246,0.1);color:var(--accent2)}
+.cat-meals{background:rgba(245,200,66,0.1);color:var(--accent3)}
+.cat-office{background:rgba(79,255,176,0.08);color:var(--accent)}
+.cat-software{background:rgba(255,107,107,0.1);color:var(--accent4)}
+.cat-client{background:rgba(168,85,247,0.1);color:#c084fc}
+.amount-cell{font-weight:600;color:var(--accent);text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px}
+.amount-orig{font-size:10px;color:var(--muted);text-align:right}
+.status-pill{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-family:'JetBrains Mono',monospace}
+.sdot{width:5px;height:5px;border-radius:50%}
+.s-done .sdot{background:var(--accent)}
+.s-done{color:var(--accent)}
+.s-review .sdot{background:var(--accent3)}
+.s-review{color:var(--accent3)}
+
+/* PAGINATION */
+.pagination{padding:16px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.page-info{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.page-btns{display:flex;gap:4px}
+.page-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--label);font-size:12px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center}
+.page-btn:hover,.page-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(79,255,176,0.06)}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo"><div class="logo-dot"></div>ReceiptIQ</div>
+  <div class="sidebar-section">Main</div>
+  <a class="nav-item" href="index.html"><span class="nav-icon">⬛</span> Overview</a>
+  <a class="nav-item" href="upload.html"><span class="nav-icon">⬆</span> Upload Receipt <span class="nav-badge">3</span></a>
+  <a class="nav-item active" href="transactions.html"><span class="nav-icon">≡</span> Transactions</a>
+  <a class="nav-item" href="reports.html"><span class="nav-icon">↗</span> Reports</a>
+  <div class="sidebar-section">Accountant</div>
+  <a class="nav-item" href="#"><span class="nav-icon">👥</span> Clients</a>
+  <a class="nav-item" href="#"><span class="nav-icon">✓</span> Review Queue</a>
+  <a class="nav-item" href="#"><span class="nav-icon">📤</span> Bulk Export</a>
+  <div class="sidebar-section">Settings</div>
+  <a class="nav-item" href="#"><span class="nav-icon">⚙</span> Settings</a>
+  <a class="nav-item" href="#"><span class="nav-icon">🎨</span> White Label</a>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="user-avatar">SA</div>
+      <div><div class="user-name">Sarah Accountant</div><div class="user-plan">accountant-pro · 12 clients</div></div>
+    </div>
+  </div>
+</aside>
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="breadcrumb">dashboard /</div>
+      <div class="page-title">Transactions</div>
+    </div>
+    <div class="topbar-right">
+      <a href="upload.html" class="topbar-btn primary">+ Upload</a>
+      <a href="reports.html" class="topbar-btn">↓ Export CSV</a>
+    </div>
+  </div>
+  <div class="content">
+    <div class="filters">
+      <div class="search-box"><span style="color:var(--muted)">🔍</span><input placeholder="Search merchant, category, amount..."></div>
+      <button class="filter-btn active">All</button>
+      <button class="filter-btn">Travel</button>
+      <button class="filter-btn">Meals</button>
+      <button class="filter-btn">Software</button>
+      <button class="filter-btn">Office</button>
+      <button class="filter-btn">⚠ Review</button>
+    </div>
+    <div class="table-wrap">
+      <div class="table-header">
+        <div class="table-meta">284 transactions · Nov 2024</div>
+        <div class="table-meta">Total: $14,820.40</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Merchant</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Client</th>
+            <th style="text-align:right">Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="merchant-cell"><div class="merchant-thumb" style="background:rgba(59,130,246,0.1)">✈️</div><div><div class="merchant-name">British Airways</div><div class="merchant-ref">TXN-2024-1142</div></div></div></td>
+            <td><span class="cat-pill cat-travel">Travel</span></td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px">Nov 14</td>
+            <td>Thornton Consulting</td>
+            <td><div class="amount-cell">$1,240.00</div><div class="amount-orig">£980.00</div></td>
+            <td><span class="status-pill s-done"><div class="sdot"></div>Done</span></td>
+          </tr>
+          <tr>
+            <td><div class="merchant-cell"><div class="merchant-thumb" style="background:rgba(245,200,66,0.1)">🍽️</div><div><div class="merchant-name">The Capital Grille</div><div class="merchant-ref">TXN-2024-1141</div></div></div></td>
+            <td><span class="cat-pill cat-meals">Meals</span></td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px">Nov 13</td>
+            <td>Blue Ridge Media</td>
+            <td><div class="amount-cell">$284.50</div><div class="amount-orig">USD</div></td>
+            <td><span class="status-pill s-done"><div class="sdot"></div>Done</span></td>
+          </tr>
+          <tr>
+            <td><div class="merchant-cell"><div class="merchant-thumb" style="background:rgba(79,255,176,0.08)">💻</div><div><div class="merchant-name">Adobe Creative Cloud</div><div class="merchant-ref">TXN-2024-1140</div></div></div></td>
+            <td><span class="cat-pill cat-software">Software</span></td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px">Nov 12</td>
+            <td>Nexus Retail Group</td>
+            <td><div class="amount-cell">$54.99</div><div class="amount-orig">USD</div></td>
+            <td><span class="status-pill s-done"><div class="sdot"></div>Done</span></td>
+          </tr>
+          <tr>
+            <td><div class="merchant-cell"><div class="merchant-thumb" style="background:rgba(168,85,247,0.1)">🤝</div><div><div class="merchant-name">Nobu Restaurant</div><div class="merchant-ref">TXN-2024-1139</div></div></div></td>
+            <td><span class="cat-pill cat-client">Client Ent.</span></td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px">Nov 11</td>
+            <td>Thornton Consulting</td>
+            <td><div class="amount-cell">$530.40</div><div class="amount-orig">€420.00</div></td>
+            <td><span class="status-pill s-review"><div class="sdot"></div>Review</span></td>
+          </tr>
+          <tr>
+            <td><div class="merchant-cell"><div class="merchant-thumb" style="background:rgba(79,255,176,0.08)">📎</div><div><div class="merchant-name">Staples</div><div class="merchant-ref">TXN-2024-1138</div></div></div></td>
+            <td><span class="cat-pill cat-office">Office</span></td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px">Nov 10</td>
+            <td>Okafor & Sons</td>
+            <td><div class="amount-cell">$67.30</div><div class="amount-orig">USD</div></td>
+            <td><span class="status-pill s-done"><div class="sdot"></div>Done</span></td>
+          </tr>
+          <tr>
+            <td><div class="merchant-cell"><div class="merchant-thumb" style="background:rgba(59,130,246,0.1)">🏨</div><div><div class="merchant-name">Marriott Hotels</div><div class="merchant-ref">TXN-2024-1137</div></div></div></td>
+            <td><span class="cat-pill cat-travel">Travel</span></td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px">Nov 09</td>
+            <td>Thornton Consulting</td>
+            <td><div class="amount-cell">$890.00</div><div class="amount-orig">USD</div></td>
+            <td><span class="status-pill s-done"><div class="sdot"></div>Done</span></td>
+          </tr>
+          <tr>
+            <td><div class="merchant-cell"><div class="merchant-thumb" style="background:rgba(79,255,176,0.08)">☁️</div><div><div class="merchant-name">AWS Cloud Services</div><div class="merchant-ref">TXN-2024-1136</div></div></div></td>
+            <td><span class="cat-pill cat-software">Software</span></td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px">Nov 08</td>
+            <td>Blue Ridge Media</td>
+            <td><div class="amount-cell">$342.18</div><div class="amount-orig">USD</div></td>
+            <td><span class="status-pill s-done"><div class="sdot"></div>Done</span></td>
+          </tr>
+          <tr>
+            <td><div class="merchant-cell"><div class="merchant-thumb" style="background:rgba(245,200,66,0.1)">⛽</div><div><div class="merchant-name">Shell Fuel Station</div><div class="merchant-ref">TXN-2024-1135</div></div></div></td>
+            <td><span class="cat-pill cat-travel">Travel</span></td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px">Nov 07</td>
+            <td>Nexus Retail Group</td>
+            <td><div class="amount-cell">$88.40</div><div class="amount-orig">USD</div></td>
+            <td><span class="status-pill s-review"><div class="sdot"></div>Review</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <div class="page-info">Showing 1–8 of 284</div>
+        <div class="page-btns">
+          <button class="page-btn">←</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active')});
+});
+</script>
+</body>
+</html>

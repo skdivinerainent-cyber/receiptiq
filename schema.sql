@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReceiptIQ — Start Free Trial</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#080a0d;--surface:#111520;--border:#1a2035;--border2:#202840;--accent:#4fffb0;--text:#e8edf8;--muted:#4a5568;--label:#8892a4}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black,transparent);opacity:0.2}
+.glow{position:fixed;width:600px;height:600px;background:radial-gradient(ellipse,rgba(79,255,176,0.05) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.card{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:40px;width:100%;max-width:440px;position:relative;z-index:1;box-shadow:0 40px 80px rgba(0,0,0,0.6)}
+.logo{font-family:'Instrument Serif',serif;font-size:22px;display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:28px}
+.logo-dot{width:8px;height:8px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.trial-badge{display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(79,255,176,0.06);border:1px solid rgba(79,255,176,0.15);border-radius:100px;padding:5px 14px;margin-bottom:20px;width:fit-content;margin-left:auto;margin-right:auto}
+.trial-badge span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:0.08em}
+h2{font-family:'Instrument Serif',serif;font-size:26px;text-align:center;margin-bottom:6px;letter-spacing:-0.01em}
+.subtitle{font-size:13px;color:var(--label);text-align:center;margin-bottom:24px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{margin-bottom:12px}
+label{display:block;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--label);margin-bottom:5px;font-family:'JetBrains Mono',monospace;text-transform:uppercase}
+input,select{width:100%;background:#0d1017;border:1px solid var(--border2);border-radius:8px;padding:11px 14px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:all 0.2s}
+input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,255,176,0.08)}
+input::placeholder{color:var(--muted)}
+select option{background:#0d1017}
+.plan-select{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+.plan-opt{border:1px solid var(--border2);border-radius:8px;padding:12px 8px;text-align:center;cursor:pointer;transition:all 0.2s}
+.plan-opt:hover{border-color:var(--border2);background:rgba(255,255,255,0.02)}
+.plan-opt.selected{border-color:var(--accent);background:rgba(79,255,176,0.06)}
+.plan-name{font-size:11px;font-weight:700;margin-bottom:2px}
+.plan-price{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.submit-btn{width:100%;background:var(--accent);color:#000;border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;transition:all 0.2s;font-family:'DM Sans',sans-serif}
+.submit-btn:hover{background:#6fffbf;transform:translateY(-1px)}
+.switch-link{text-align:center;font-size:13px;color:var(--label);margin-top:16px}
+.switch-link a{color:var(--accent);text-decoration:none;font-weight:600}
+.terms{text-align:center;font-size:10px;color:var(--muted);margin-top:12px;font-family:'JetBrains Mono',monospace;line-height:1.5}
+.terms a{color:var(--label);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<div class="card">
+  <div class="logo"><div class="logo-dot"></div>ReceiptIQ</div>
+  <div class="trial-badge"><span>● 14-DAY FREE TRIAL · NO CREDIT CARD</span></div>
+  <h2>Start your free trial</h2>
+  <p class="subtitle">Join hundreds of accounting firms already using ReceiptIQ</p>
+
+  <div style="margin-bottom:16px">
+    <label style="margin-bottom:8px">Choose your plan</label>
+    <div class="plan-select">
+      <div class="plan-opt" onclick="selectPlan(this)">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">$29/mo</div>
+      </div>
+      <div class="plan-opt selected" onclick="selectPlan(this)">
+        <div class="plan-name" style="color:var(--accent)">Accountant Pro</div>
+        <div class="plan-price">$15/seat</div>
+      </div>
+      <div class="plan-opt" onclick="selectPlan(this)">
+        <div class="plan-name">White Label</div>
+        <div class="plan-price">$299/mo</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="form-group"><label>First name</label><input placeholder="Sarah"></div>
+    <div class="form-group"><label>Last name</label><input placeholder="Mitchell"></div>
+  </div>
+  <div class="form-group"><label>Work email</label><input type="email" placeholder="sarah@mitchellcpa.com"></div>
+  <div class="form-group"><label>Firm name</label><input placeholder="Mitchell & Associates CPA"></div>
+  <div class="form-group"><label>Password</label><input type="password" placeholder="Min. 8 characters"></div>
+
+  <button class="submit-btn" onclick="window.location='../dashboard/index.html'">Start Free Trial →</button>
+  <div class="switch-link">Already have an account? <a href="login.html">Sign in</a></div>
+  <div class="terms">By signing up you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></div>
+</div>
+<script>
+function selectPlan(el){document.querySelectorAll('.plan-opt').forEach(p=>p.classList.remove('selected'));el.classList.add('selected')}
+</script>
+</body>
+</html>
