@@ -279,32 +279,19 @@ Rules:
 - confidence values are 0.0 to 1.0
 - If you cannot read a field clearly, use null`;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('/.netlify/functions/claude-extract', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': RECEIPTIQ_CONFIG.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-            { type: 'text', text: prompt }
-          ]
-        }]
+        image: { media_type: mediaType, data: base64 }
       })
     });
 
-    if (!response.ok) throw new Error('Claude API error: ' + response.status);
-    const aiData = await response.json();
-    const rawText = aiData.content[0].text.trim();
-    const clean = rawText.replace(/```json|```/g, '').trim();
-    extractedData = JSON.parse(clean);
+    const result = await response.json();
+    if (!response.ok) throw new Error(result?.error || 'Claude extraction failed.');
+    extractedData = result.data;
 
     setStep(3, 'done'); setStep(4, 'active');
     await new Promise(r => setTimeout(r, 600));
@@ -316,7 +303,7 @@ Rules:
     showResult(extractedData);
 
   } catch(e) {
-    showError('AI extraction failed: ' + e.message + '. Check your API key in config.js');
+    showError('AI extraction failed: ' + e.message + '. Check your server environment or logs.');
   }
 }
 
@@ -349,25 +336,32 @@ async function saveTransaction() {
 
   const amountStr = document.getElementById('fAmount').value.replace(/[$,]/g,'');
 
-  const { error } = await sb.from('transactions').insert({
-    workspace_id: currentWorkspaceId,
-    receipt_id: null,
-    merchant: document.getElementById('fMerchant').value,
-    amount: parseFloat(amountStr) || 0,
-    currency_original: document.getElementById('fCurrency').value,
-    amount_original: extractedData?.amount_original || parseFloat(amountStr) || 0,
-    transaction_date: document.getElementById('fDate').value,
-    category: document.getElementById('fCategory').value,
-    tax_status: document.getElementById('fTax').value,
-    status: 'done',
-    confidence_score: extractedData?.confidence_amount || 0.9,
-    description: extractedData?.description || ''
+  const response = await fetch('/.netlify/functions/save-transaction', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      workspace_id: currentWorkspaceId,
+      receipt_id: null,
+      merchant: document.getElementById('fMerchant').value,
+      amount: parseFloat(amountStr) || 0,
+      currency_original: document.getElementById('fCurrency').value,
+      amount_original: extractedData?.amount_original || parseFloat(amountStr) || 0,
+      transaction_date: document.getElementById('fDate').value,
+      category: document.getElementById('fCategory').value,
+      tax_status: document.getElementById('fTax').value,
+      status: 'done',
+      confidence_score: extractedData?.confidence_amount || 0.9,
+      description: extractedData?.description || ''
+    })
   });
 
-  if (error) {
+  const saveResult = await response.json();
+  if (!response.ok) {
     btn.disabled = false;
     btn.innerHTML = 'Save Transaction →';
-    alert('Save failed: ' + error.message);
+    alert('Save failed: ' + (saveResult?.error || 'Server error'));
     return;
   }
 

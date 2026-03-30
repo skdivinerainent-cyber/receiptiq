@@ -1,0 +1,7 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+  command = "node build-config.js"
+
+[dev]
+  functions = "netlify/functions"

@@ -4,16 +4,17 @@
 
 ```
 receiptiq/
-├── landing/index.html        ← Public landing page (deploy to Vercel)
-├── dashboard/
-│   ├── index.html            ← Main dashboard
-│   ├── upload.html           ← Receipt upload + AI extraction
-│   ├── transactions.html     ← Transaction list
-│   └── reports.html          ← Tax exports & reports
-├── auth/
-│   ├── login.html            ← Sign in page
-│   └── signup.html           ← Sign up / free trial page
-├── sql/schema.sql            ← Paste into Supabase SQL Editor
+├── index.html                ← Public landing page
+├── auth-login.html           ← Sign in page
+├── auth-signup.html          ← Sign up page
+├── dashboard-overview.html   ← Main dashboard
+├── dashboard-upload.html     ← Receipt upload + AI extraction
+├── dashboard-transactions.html ← Transaction list
+├── dashboard-reports.html    ← Tax exports & reports
+├── build-config.js           ← Generates config.js from env vars
+├── config.example.js         ← Example client config
+├── .env.example              ← Example local environment file
+├── netlify/functions/        ← Serverless backend endpoints
 └── README.md                 ← You are here
 ```
 
@@ -54,22 +55,27 @@ In your Supabase dashboard:
 
 ---
 
-## Step 4 — Deploy to Vercel
+## Step 4 — Deploy to Netlify
 
-1. Go to [vercel.com](https://vercel.com) and sign up with GitHub
-2. Click **Add New Project** → select your `receiptiq-app` repo
-3. Click **Deploy** — Vercel auto-detects the project
-4. Your app is live at `receiptiq-app.vercel.app` 🎉
+1. Go to [netlify.com](https://netlify.com) and sign up with GitHub
+2. Click **New site from Git** → select your `receiptiq-app` repo
+3. Set the build command to `node build-config.js`
+4. Set the publish directory to `/`
+5. Deploy the site
 
-**Add Environment Variables in Vercel:**
-Go to your project → Settings → Environment Variables and add:
+**Add Environment Variables in Netlify:**
+Go to Site settings → Build & deploy → Environment and add:
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-ANTHROPIC_API_KEY=your-claude-api-key
-STRIPE_SECRET_KEY=your-stripe-key (add later)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+CLAUDE_API_KEY=your-claude-api-key
+APP_NAME=ReceiptIQ
+DEFAULT_CURRENCY=USD
 ```
+
+If you prefer Vercel, use the same environment variables and set `NODE_VERSION=20` if needed.
 
 ---
 
@@ -78,7 +84,7 @@ STRIPE_SECRET_KEY=your-stripe-key (add later)
 1. Go to [console.anthropic.com](https://console.anthropic.com)
 2. Sign up and go to **API Keys**
 3. Click **Create Key** and copy it
-4. Add it to your Vercel environment variables as `ANTHROPIC_API_KEY`
+4. Add it to your environment variables as `CLAUDE_API_KEY`
 
 **The Claude API prompt to use for receipt extraction:**
 

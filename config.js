@@ -1,6 +1,7 @@
 // ============================================================
 // ReceiptIQ — config.js
-// Replace the values below with your actual keys
+// This file is generated from environment variables at build time.
+// Never commit real API keys or secrets.
 // ============================================================
 
 const RECEIPTIQ_CONFIG = {
@@ -8,10 +9,7 @@ const RECEIPTIQ_CONFIG = {
   SUPABASE_URL: 'https://YOUR_PROJECT.supabase.co',
   SUPABASE_ANON_KEY: 'YOUR_SUPABASE_ANON_KEY',
 
-  // 2. Your Anthropic Claude API key: console.anthropic.com
-  ANTHROPIC_API_KEY: 'YOUR_ANTHROPIC_API_KEY',
-
-  // 3. App settings
+  // 2. App settings
   APP_NAME: 'ReceiptIQ',
   DEFAULT_CURRENCY: 'USD',
 };

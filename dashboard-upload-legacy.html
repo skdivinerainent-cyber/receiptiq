@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReceiptIQ — Upload Receipt</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080a0d;--bg2:#0d1017;--surface:#111520;--surface2:#161c2a;
+  --border:#1a2035;--border2:#202840;
+  --accent:#4fffb0;--accent2:#3b82f6;--accent3:#f5c842;--accent4:#ff6b6b;
+  --text:#e8edf8;--muted:#4a5568;--label:#8892a4;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+.sidebar{width:240px;min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid var(--border);font-family:'Instrument Serif',serif;font-size:20px;display:flex;align-items:center;gap:8px}
+.logo-dot{width:8px;height:8px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.sidebar-section{padding:20px 12px 8px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--label);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.15s;margin:1px 8px;cursor:pointer}
+.nav-item:hover{background:var(--surface);color:var(--text)}
+.nav-item.active{background:rgba(79,255,176,0.08);color:var(--accent);border:1px solid rgba(79,255,176,0.12)}
+.nav-icon{font-size:15px;width:20px;text-align:center}
+.nav-badge{margin-left:auto;background:var(--accent);color:#000;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;font-family:'JetBrains Mono',monospace}
+.sidebar-bottom{margin-top:auto;border-top:1px solid var(--border);padding:16px}
+.user-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;cursor:pointer;transition:background 0.2s}
+.user-card:hover{background:var(--surface)}
+.user-avatar{width:32px;height:32px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#000;flex-shrink:0}
+.user-name{font-size:13px;font-weight:600}
+.user-plan{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column}
+.topbar{height:60px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:rgba(8,10,13,0.8);backdrop-filter:blur(12px);position:sticky;top:0;z-index:40}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.page-title{font-size:15px;font-weight:600}
+.breadcrumb{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.content{padding:28px;flex:1;max-width:800px}
+
+/* UPLOAD */
+.upload-zone{
+  border:2px dashed var(--border2);border-radius:16px;
+  padding:60px 40px;text-align:center;
+  transition:all 0.25s;cursor:pointer;
+  position:relative;overflow:hidden;
+  margin-bottom:24px;background:var(--surface);
+}
+.upload-zone:hover,.upload-zone.drag{
+  border-color:var(--accent);
+  background:rgba(79,255,176,0.03);
+}
+.upload-zone::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(79,255,176,0.04),transparent 70%);
+  opacity:0;transition:opacity 0.3s;
+}
+.upload-zone:hover::before{opacity:1}
+.upload-icon-big{font-size:48px;margin-bottom:16px;display:block}
+.upload-title-big{font-family:'Instrument Serif',serif;font-size:24px;margin-bottom:8px}
+.upload-sub{font-size:14px;color:var(--label);margin-bottom:16px}
+.upload-btn{
+  display:inline-block;background:var(--accent);color:#000;
+  font-size:13px;font-weight:700;padding:10px 24px;border-radius:8px;
+  cursor:pointer;transition:all 0.2s;
+}
+.upload-btn:hover{background:#6fffbf;transform:translateY(-1px)}
+.upload-formats{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:12px}
+input[type=file]{display:none}
+
+/* PROCESSING */
+.processing-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;display:none;margin-bottom:24px;
+}
+.processing-card.visible{display:block}
+.proc-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.proc-spinner{
+  width:20px;height:20px;border-radius:50%;
+  border:2px solid var(--border2);border-top-color:var(--accent);
+  animation:spin 0.8s linear infinite;flex-shrink:0;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.proc-title{font-size:13px;font-weight:600}
+.proc-sub{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.proc-steps{padding:16px 20px}
+.proc-step{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:13px;color:var(--muted)}
+.proc-step.done{color:var(--label)}
+.proc-step.active{color:var(--text)}
+.step-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;background:var(--border2)}
+.step-icon.done{background:var(--accent);color:#000}
+.step-icon.active{background:var(--accent2);color:#fff;animation:pulse 1s infinite}
+
+/* RESULT CARD */
+.result-card{
+  background:var(--surface);border:1px solid var(--accent);border-radius:12px;
+  overflow:hidden;display:none;
+}
+.result-card.visible{display:block}
+.result-header{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(79,255,176,0.04);
+}
+.result-status{display:flex;align-items:center;gap:8px;color:var(--accent);font-size:13px;font-weight:600}
+.result-actions{display:flex;gap:8px}
+.result-btn{padding:7px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;border:none}
+.result-btn.save{background:var(--accent);color:#000}
+.result-btn.save:hover{background:#6fffbf}
+.result-btn.discard{background:transparent;color:var(--label);border:1px solid var(--border2)}
+.result-btn.discard:hover{color:var(--accent4);border-color:var(--accent4)}
+.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:20px}
+.field-group{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px}
+.field-key{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field-input{
+  width:100%;background:transparent;border:none;outline:none;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--text);
+}
+.field-input:focus{color:var(--accent)}
+.conf-bar{height:2px;background:var(--border2);border-radius:1px;margin-top:6px}
+.conf-fill{height:100%;border-radius:1px;background:var(--accent);transition:width 1s ease}
+.conf-label{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:3px}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo"><div class="logo-dot"></div>ReceiptIQ</div>
+  <div class="sidebar-section">Main</div>
+  <a class="nav-item" href="index.html"><span class="nav-icon">⬛</span> Overview</a>
+  <a class="nav-item active" href="upload.html"><span class="nav-icon">⬆</span> Upload Receipt <span class="nav-badge">3</span></a>
+  <a class="nav-item" href="transactions.html"><span class="nav-icon">≡</span> Transactions</a>
+  <a class="nav-item" href="reports.html"><span class="nav-icon">↗</span> Reports</a>
+  <div class="sidebar-section">Accountant</div>
+  <a class="nav-item" href="#"><span class="nav-icon">👥</span> Clients</a>
+  <a class="nav-item" href="#"><span class="nav-icon">✓</span> Review Queue</a>
+  <a class="nav-item" href="#"><span class="nav-icon">📤</span> Bulk Export</a>
+  <div class="sidebar-section">Settings</div>
+  <a class="nav-item" href="#"><span class="nav-icon">⚙</span> Settings</a>
+  <a class="nav-item" href="#"><span class="nav-icon">🎨</span> White Label</a>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="user-avatar">SA</div>
+      <div><div class="user-name">Sarah Accountant</div><div class="user-plan">accountant-pro · 12 clients</div></div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="breadcrumb">dashboard /</div>
+      <div class="page-title">Upload Receipt</div>
+    </div>
+  </div>
+  <div class="content">
+
+    <div class="upload-zone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+      <span class="upload-icon-big">📄</span>
+      <div class="upload-title-big">Drop your receipt here</div>
+      <div class="upload-sub">Snap a photo or upload any file — AI handles the rest</div>
+      <div class="upload-btn">Choose File</div>
+      <div class="upload-formats">// JPG · PNG · PDF · HEIC · WEBP supported</div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*,.pdf">
+
+    <!-- PROCESSING -->
+    <div class="processing-card" id="processingCard">
+      <div class="proc-header">
+        <div class="proc-spinner"></div>
+        <div>
+          <div class="proc-title">ReceiptIQ AI is analyzing your receipt</div>
+          <div class="proc-sub" id="procFile">receipt.jpg · processing...</div>
+        </div>
+      </div>
+      <div class="proc-steps">
+        <div class="proc-step active" id="step1"><div class="step-icon active">1</div>Reading document structure</div>
+        <div class="proc-step" id="step2"><div class="step-icon">2</div>Extracting merchant & amounts</div>
+        <div class="proc-step" id="step3"><div class="step-icon">3</div>Converting currency (GBP → USD)</div>
+        <div class="proc-step" id="step4"><div class="step-icon">4</div>Auto-categorizing expense</div>
+        <div class="proc-step" id="step5"><div class="step-icon">5</div>Checking tax deductibility</div>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="result-card" id="resultCard">
+      <div class="result-header">
+        <div class="result-status">✓ Extracted successfully · Review & save</div>
+        <div class="result-actions">
+          <button class="result-btn discard" onclick="resetUpload()">✕ Discard</button>
+          <button class="result-btn save" onclick="window.location='transactions.html'">Save Transaction →</button>
+        </div>
+      </div>
+      <div class="fields-grid">
+        <div class="field-group">
+          <div class="field-key">Merchant Name</div>
+          <input class="field-input" value="British Airways" id="f-merchant">
+          <div class="conf-bar"><div class="conf-fill" style="width:98%"></div></div>
+          <div class="conf-label">98% confidence</div>
+        </div>
+        <div class="field-group">
+          <div class="field-key">Total Amount</div>
+          <input class="field-input" value="$1,240.00" id="f-amount" style="color:var(--accent)">
+          <div class="conf-bar"><div class="conf-fill" style="width:99%"></div></div>
+          <div class="conf-label">99% confidence · converted from £980.00</div>
+        </div>
+        <div class="field-group">
+          <div class="field-key">Date</div>
+          <input class="field-input" value="November 14, 2024">
+          <div class="conf-bar"><div class="conf-fill" style="width:100%"></div></div>
+          <div class="conf-label">100% confidence</div>
+        </div>
+        <div class="field-group">
+          <div class="field-key">Category</div>
+          <input class="field-input" value="Business Travel" style="color:var(--accent2)">
+          <div class="conf-bar"><div class="conf-fill" style="width:95%;background:var(--accent2)"></div></div>
+          <div class="conf-label">95% confidence · auto-categorized</div>
+        </div>
+        <div class="field-group">
+          <div class="field-key">Currency</div>
+          <input class="field-input" value="GBP → USD (rate: 1.2653)">
+          <div class="conf-bar"><div class="conf-fill" style="width:100%"></div></div>
+          <div class="conf-label">Live FX rate · Nov 14, 2024</div>
+        </div>
+        <div class="field-group">
+          <div class="field-key">Tax Status</div>
+          <input class="field-input" value="Fully Deductible" style="color:var(--accent)">
+          <div class="conf-bar"><div class="conf-fill" style="width:92%"></div></div>
+          <div class="conf-label">92% confidence</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const processingCard = document.getElementById('processingCard');
+const resultCard = document.getElementById('resultCard');
+
+fileInput.addEventListener('change', e => {
+  if(e.target.files[0]) startProcessing(e.target.files[0].name);
+});
+
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault(); dropzone.classList.remove('drag');
+  if(e.dataTransfer.files[0]) startProcessing(e.dataTransfer.files[0].name);
+});
+
+function startProcessing(filename) {
+  dropzone.style.display = 'none';
+  document.getElementById('procFile').textContent = filename + ' · processing...';
+  processingCard.classList.add('visible');
+  const steps = [1,2,3,4,5];
+  steps.forEach((s, i) => {
+    setTimeout(() => {
+      if(i > 0) {
+        const prev = document.getElementById('step' + steps[i-1]);
+        prev.querySelector('.step-icon').className = 'step-icon done';
+        prev.querySelector('.step-icon').textContent = '✓';
+        prev.classList.remove('active'); prev.classList.add('done');
+      }
+      const curr = document.getElementById('step' + s);
+      curr.classList.add('active');
+      curr.querySelector('.step-icon').className = 'step-icon active';
+    }, i * 600);
+  });
+  setTimeout(() => {
+    processingCard.style.display = 'none';
+    resultCard.classList.add('visible');
+  }, 3400);
+}
+
+function resetUpload() {
+  resultCard.classList.remove('visible');
+  dropzone.style.display = '';
+  fileInput.value = '';
+  [1,2,3,4,5].forEach(s => {
+    const el = document.getElementById('step' + s);
+    el.className = 'proc-step';
+    el.querySelector('.step-icon').className = 'step-icon';
+    el.querySelector('.step-icon').textContent = s;
+  });
+  document.getElementById('step1').classList.add('active');
+  document.getElementById('step1').querySelector('.step-icon').className = 'step-icon active';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Local debug files
+.env
+config.local.js
+
+# Netlify state
+.netlify
+.netlify/functions
+
+# OS / editor
+.DS_Store
+*.swp
+node_modules/
