@@ -5,20 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ReceiptIQ — Start Free Trial</title>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#080a0d;--surface:#111520;--border:#1a2035;--border2:#202840;--accent:#4fffb0;--text:#e8edf8;--muted:#4a5568;--label:#8892a4}
+:root{--bg:#080a0d;--surface:#111520;--border:#1a2035;--border2:#202840;--accent:#4fffb0;--text:#e8edf8;--muted:#4a5568;--label:#8892a4;--error:#ff6b6b}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black,transparent);opacity:0.2}
 .glow{position:fixed;width:600px;height:600px;background:radial-gradient(ellipse,rgba(79,255,176,0.05) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
 .card{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:40px;width:100%;max-width:440px;position:relative;z-index:1;box-shadow:0 40px 80px rgba(0,0,0,0.6)}
-.logo{font-family:'Instrument Serif',serif;font-size:22px;display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:28px}
+.logo{font-family:'Instrument Serif',serif;font-size:22px;display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:20px;text-decoration:none;color:var(--text)}
 .logo-dot{width:8px;height:8px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-.trial-badge{display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(79,255,176,0.06);border:1px solid rgba(79,255,176,0.15);border-radius:100px;padding:5px 14px;margin-bottom:20px;width:fit-content;margin-left:auto;margin-right:auto}
+.trial-badge{display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(79,255,176,0.06);border:1px solid rgba(79,255,176,0.15);border-radius:100px;padding:5px 14px;margin-bottom:16px;width:fit-content;margin-left:auto;margin-right:auto}
 .trial-badge span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:0.08em}
-h2{font-family:'Instrument Serif',serif;font-size:26px;text-align:center;margin-bottom:6px;letter-spacing:-0.01em}
-.subtitle{font-size:13px;color:var(--label);text-align:center;margin-bottom:24px}
+h2{font-family:'Instrument Serif',serif;font-size:26px;text-align:center;margin-bottom:6px}
+.subtitle{font-size:13px;color:var(--label);text-align:center;margin-bottom:20px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .form-group{margin-bottom:12px}
 label{display:block;font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--label);margin-bottom:5px;font-family:'JetBrains Mono',monospace;text-transform:uppercase}
@@ -26,60 +28,140 @@ input,select{width:100%;background:#0d1017;border:1px solid var(--border2);borde
 input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,255,176,0.08)}
 input::placeholder{color:var(--muted)}
 select option{background:#0d1017}
-.plan-select{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+.plan-select{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
 .plan-opt{border:1px solid var(--border2);border-radius:8px;padding:12px 8px;text-align:center;cursor:pointer;transition:all 0.2s}
-.plan-opt:hover{border-color:var(--border2);background:rgba(255,255,255,0.02)}
 .plan-opt.selected{border-color:var(--accent);background:rgba(79,255,176,0.06)}
 .plan-name{font-size:11px;font-weight:700;margin-bottom:2px}
 .plan-price{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace}
-.submit-btn{width:100%;background:var(--accent);color:#000;border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;transition:all 0.2s;font-family:'DM Sans',sans-serif}
-.submit-btn:hover{background:#6fffbf;transform:translateY(-1px)}
-.switch-link{text-align:center;font-size:13px;color:var(--label);margin-top:16px}
+.error-box{background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--error);margin-bottom:12px;display:none}
+.success-box{background:rgba(79,255,176,0.06);border:1px solid rgba(79,255,176,0.15);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--accent);margin-bottom:12px;display:none}
+.submit-btn{width:100%;background:var(--accent);color:#000;border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;transition:all 0.2s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px}
+.submit-btn:hover:not(:disabled){background:#6fffbf;transform:translateY(-1px)}
+.submit-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.spinner{width:16px;height:16px;border:2px solid rgba(0,0,0,0.3);border-top-color:#000;border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.switch-link{text-align:center;font-size:13px;color:var(--label);margin-top:14px}
 .switch-link a{color:var(--accent);text-decoration:none;font-weight:600}
-.terms{text-align:center;font-size:10px;color:var(--muted);margin-top:12px;font-family:'JetBrains Mono',monospace;line-height:1.5}
+.terms{text-align:center;font-size:10px;color:var(--muted);margin-top:10px;font-family:'JetBrains Mono',monospace;line-height:1.5}
 .terms a{color:var(--label);text-decoration:none}
 </style>
 </head>
 <body>
 <div class="glow"></div>
 <div class="card">
-  <div class="logo"><div class="logo-dot"></div>ReceiptIQ</div>
+  <a href="landing-page.html" class="logo"><div class="logo-dot"></div>ReceiptIQ</a>
   <div class="trial-badge"><span>● 14-DAY FREE TRIAL · NO CREDIT CARD</span></div>
   <h2>Start your free trial</h2>
   <p class="subtitle">Join hundreds of accounting firms already using ReceiptIQ</p>
 
-  <div style="margin-bottom:16px">
+  <div style="margin-bottom:14px">
     <label style="margin-bottom:8px">Choose your plan</label>
     <div class="plan-select">
-      <div class="plan-opt" onclick="selectPlan(this)">
+      <div class="plan-opt" onclick="selectPlan(this,'starter')">
         <div class="plan-name">Starter</div>
         <div class="plan-price">$29/mo</div>
       </div>
-      <div class="plan-opt selected" onclick="selectPlan(this)">
+      <div class="plan-opt selected" onclick="selectPlan(this,'accountant_pro')">
         <div class="plan-name" style="color:var(--accent)">Accountant Pro</div>
         <div class="plan-price">$15/seat</div>
       </div>
-      <div class="plan-opt" onclick="selectPlan(this)">
+      <div class="plan-opt" onclick="selectPlan(this,'white_label')">
         <div class="plan-name">White Label</div>
         <div class="plan-price">$299/mo</div>
       </div>
     </div>
   </div>
 
-  <div class="row">
-    <div class="form-group"><label>First name</label><input placeholder="Sarah"></div>
-    <div class="form-group"><label>Last name</label><input placeholder="Mitchell"></div>
-  </div>
-  <div class="form-group"><label>Work email</label><input type="email" placeholder="sarah@mitchellcpa.com"></div>
-  <div class="form-group"><label>Firm name</label><input placeholder="Mitchell & Associates CPA"></div>
-  <div class="form-group"><label>Password</label><input type="password" placeholder="Min. 8 characters"></div>
+  <div class="error-box" id="errorBox"></div>
+  <div class="success-box" id="successBox"></div>
 
-  <button class="submit-btn" onclick="window.location='dashboard-overview.html'">Start Free Trial →</button>
+  <div class="row">
+    <div class="form-group"><label>First name</label><input id="firstName" placeholder="Sarah"></div>
+    <div class="form-group"><label>Last name</label><input id="lastName" placeholder="Mitchell"></div>
+  </div>
+  <div class="form-group"><label>Work email</label><input type="email" id="email" placeholder="sarah@mitchellcpa.com"></div>
+  <div class="form-group"><label>Firm / Company name</label><input id="firmName" placeholder="Mitchell & Associates CPA"></div>
+  <div class="form-group"><label>Password</label><input type="password" id="password" placeholder="Min. 8 characters"></div>
+
+  <button class="submit-btn" id="signupBtn" onclick="handleSignup()">Start Free Trial →</button>
   <div class="switch-link">Already have an account? <a href="auth-login.html">Sign in</a></div>
   <div class="terms">By signing up you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></div>
 </div>
+
 <script>
-function selectPlan(el){document.querySelectorAll('.plan-opt').forEach(p=>p.classList.remove('selected'));el.classList.add('selected')}
+  const { createClient } = supabase;
+  const sb = createClient(RECEIPTIQ_CONFIG.SUPABASE_URL, RECEIPTIQ_CONFIG.SUPABASE_ANON_KEY);
+
+  let selectedPlan = 'accountant_pro';
+
+  function selectPlan(el, plan) {
+    document.querySelectorAll('.plan-opt').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedPlan = plan;
+  }
+
+  async function handleSignup() {
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const firmName = document.getElementById('firmName').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('signupBtn');
+    const errorBox = document.getElementById('errorBox');
+    const successBox = document.getElementById('successBox');
+
+    errorBox.style.display = 'none';
+    successBox.style.display = 'none';
+
+    if (!firstName || !email || !firmName || !password) {
+      errorBox.textContent = 'Please fill in all required fields.';
+      errorBox.style.display = 'block';
+      return;
+    }
+    if (password.length < 8) {
+      errorBox.textContent = 'Password must be at least 8 characters.';
+      errorBox.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Creating your account...';
+
+    // 1. Create Supabase auth user
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: `${firstName} ${lastName}`,
+          firm_name: firmName,
+          plan: selectedPlan
+        }
+      }
+    });
+
+    if (error) {
+      errorBox.textContent = error.message;
+      errorBox.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = 'Start Free Trial →';
+      return;
+    }
+
+    // 2. Create workspace in DB
+    if (data.user) {
+      await sb.from('workspaces').insert({
+        name: firmName,
+        plan: selectedPlan,
+      });
+    }
+
+    successBox.textContent = '✓ Account created! Check your email to confirm, then sign in.';
+    successBox.style.display = 'block';
+    btn.innerHTML = '✓ Account Created';
+
+    setTimeout(() => window.location.href = 'auth-login.html', 3000);
+  }
 </script>
 </body>
 </html>
